@@ -1,0 +1,2 @@
+# outsosing
+외주!
