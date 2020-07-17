@@ -21,30 +21,27 @@ NODE* find_del(NODE*, NODE*);		//del함수 내 함수. 삭제하려는 노드의 이전노드 탐�
 void formal(NODE *);						//node 내 data 변경.
 void find(NODE *);							//node 탐색. 이름 입력받음.
 NODE * find_find(char*, NODE*);		//find함수 내 함수. 이름을 가지고 노드 탐색.
-//void end();									//파일에 값 저장.
+void end(NODE *);									//파일에 값 저장.
 
 void start(NODE * target)
 {
-	fp = fopen("C:/Users/user/Desktop/database/database.txt", "rt");
+	fp = fopen("C:/Users/user/Desktop/database/database.txt", "r");
 	if (fp == NULL) {
 		printf("ERROR\n");
-		return;
+		return start(target);
 	}
-	if (feof(fp) == 0) {
-		printf("파일이 없으므로 새로 생성했습니다.\n");
-	}
-	else {
-		while (feof(fp == 0)) {
+	while (!feof(fp)) {
 			start_setnode(target);
-		}
 	}
+	
 }
 void start_setnode(NODE* node)
 {
+	NODE* newNode = (NODE*)malloc(sizeof(NODE));
 	char buf[256];
 	fgets(buf, sizeof(buf), fp);
 	char* ptr = strtok(buf, " ");
-	NODE* newNode = (NODE*)malloc(sizeof(NODE));
+	
 	newNode->next = node->next;
 	strcpy(newNode->name, ptr);
 	ptr = strtok(NULL, " ");
@@ -52,6 +49,20 @@ void start_setnode(NODE* node)
 	ptr = strtok(NULL, " ");
 	strcpy(newNode->email, ptr);
 	node->next = newNode;
+}
+void end(NODE* node)
+{
+	NODE* target = node->next;
+	NODE* temp = target;
+	while (target != NULL) {
+		temp = temp->next;
+		fprintf(fp, "%s ", target->name);
+		fprintf(fp, "%s ", target->phonenum);
+		fprintf(fp, "%s ", target->email);
+		free(target);
+		target = temp;
+	}
+	
 }
 int main()
 {
@@ -76,7 +87,7 @@ int main()
 			find(hnode);
 			break;
 		case 3:
-			//end();
+			end(hnode);
 			return 0;
 			break;
 		default:
