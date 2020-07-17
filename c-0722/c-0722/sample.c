@@ -10,26 +10,62 @@ typedef struct _node {
 	struct _node* next;	//다음 노드의 주소를 담아놀 포인터
 }NODE;
 
-//void start();					//파일안 내용을 불러오는 함수
-void plus(NODE *);				//node추가.
+FILE* fp;										//파일 포인터
+
+void start(NODE *);							//파일안 내용을 불러오는 함수
+void start_setnode(NODE *);				//파일 안 내용을 node에 불러오는 함수.	
+void plus(NODE *);							//node추가.
 void del(NODE *,NODE *);					//node 삭제.
 NODE *find_plus(NODE*, NODE *);		//plus함수 내 함수. 중복여부 확인.
 NODE* find_del(NODE*, NODE*);		//del함수 내 함수. 삭제하려는 노드의 이전노드 탐색용.
-void formal(NODE *);					//node 내 data 변경.
-//void end();						//파일에 값 저장.
+void formal(NODE *);						//node 내 data 변경.
+void find(NODE *);							//node 탐색. 이름 입력받음.
+NODE * find_find(char*, NODE*);		//find함수 내 함수. 이름을 가지고 노드 탐색.
+//void end();									//파일에 값 저장.
 
+void start(NODE * target)
+{
+	fp = fopen("C:/Users/user/Desktop/database/database.txt", "rt");
+	if (fp == NULL) {
+		printf("ERROR\n");
+		return;
+	}
+	if (feof(fp) == 0) {
+		printf("파일이 없으므로 새로 생성했습니다.\n");
+	}
+	else {
+		while (feof(fp == 0)) {
+			start_setnode(target);
+		}
+	}
+}
+void start_setnode(NODE* node)
+{
+	char buf[256];
+	fgets(buf, sizeof(buf), fp);
+	char* ptr = strtok(buf, " ");
+	NODE* newNode = (NODE*)malloc(sizeof(NODE));
+	newNode->next = node->next;
+	strcpy(newNode->name, ptr);
+	ptr = strtok(NULL, " ");
+	strcpy(newNode->phonenum, ptr);
+	ptr = strtok(NULL, " ");
+	strcpy(newNode->email, ptr);
+	node->next = newNode;
+}
 int main()
 {
-	int input = 0;;										//명령어 입력
+	int input = 0;;													//명령어 입력
 	NODE* hnode = (NODE*)malloc(sizeof(NODE));		//머리 노드 생성. 데이터 X
 	hnode->next = NULL;
+	start(hnode);
 
 	printf("PIMS에 오신것을 환영합니다.\n 고객님의 개인정보를 보관합니다.\n ");
 	printf("1 : 새로운 사람을 등록하거나 등록된 사람의 정보를 수정 및 삭제할 수 있습니다.\n");
 	printf("2 : 이름을 한 글자 이상 입력하면 그 결과를 출력합니다\n");
 	printf("3 : 개인정보들을 저장하고 프로그램을 종료합니다.\n");
 	while (1) {
-		printf("\n 명령어를 입력해주세요! >> ");
+		printf("\n명령어를 입력해주세요! >> ");
 		scanf("%d", &input);
 		switch (input)
 		{
@@ -37,7 +73,7 @@ int main()
 			plus(hnode);
 			break;
 		case 2:
-			//find();
+			find(hnode);
 			break;
 		case 3:
 			//end();
@@ -110,7 +146,7 @@ NODE* find_del(NODE* data, NODE* node)			//삭제하려는 노드의 이전노드를 찾기위한
 	if (node == NULL) {
 		return NULL;
 	}
-	NODE* tmp = node->next;
+	NODE* tmp = node;										//hnode부터 시작
 	for (; tmp != NULL; tmp = tmp->next) {
 		if (tmp->next == data) {							//next에 삭제하려는 노드의 주소가 담겨있는 노드 = 이전노드
 			return tmp;
@@ -130,9 +166,34 @@ void formal(NODE* data)									//값 수정.
 void del(NODE* del,NODE *target)
 {
 	NODE *del_f =find_del(del, target);		//삭제하려는 노드의 이전노드 탐색
-	printf("p\n");
-	del_f->next = del->next;								//next = 가르키는 노드의 변경. 이전노드에 next에 삭제하려는 노드의 next값 넣어줌.
-	printf("p\n");
-	free(del);
+	del_f->next = del->next;						//next = 가르키는 노드의 변경. 이전노드에 next에 삭제하려는 노드의 next값 넣어줌.
+	free(del);											//노드 삭제!
 	printf("삭제되었습니다\n");
+}
+
+void find(NODE* target)
+{
+	char name[10];
+	printf("이름을 입력해수세요 >> ");
+	scanf("%s", name);
+	NODE * found = find_find(name, target);		//입력받은 이름으로 노드 탐색
+	if (found == NULL) {									//노드 혹은 입력받은 이름이 노드에 없을 때
+		printf("그런 이름이 없습니다!\n");
+	}
+	else {
+		printf("이름 : %s\n전화번호 : %s\n이메일 : %s\n", found->name, found->phonenum, found->email);
+	}
+}
+NODE * find_find(char* str, NODE* node)
+{
+	if (node == NULL) {			//아무노드도 없는 경우
+		return NULL;
+	}
+	NODE* tmp = node->next;
+	for (; tmp != NULL; tmp = tmp->next) {		//next가 NULL에 도달할 때까지 탐색.
+		if (!strcmp(tmp->name,str)) {			//만약 이름이 같은경우
+			return tmp;
+		}
+	}
+	return NULL;
 }
