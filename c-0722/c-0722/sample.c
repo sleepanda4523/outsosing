@@ -28,7 +28,7 @@ void start(NODE * target)
 	fp = fopen("C:/Users/user/Desktop/database/database.txt", "rt");		//파일 쓰기/읽기 모드로 열기
 	if (fp == NULL) {
 		printf("ERROR\n");
-		return start(target);
+		return ;
 	}
 	while (1) {
 		char buf[256];														//문자열(한 사람의 개인정보)를 받아올 공간
