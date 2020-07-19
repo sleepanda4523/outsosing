@@ -13,7 +13,7 @@ typedef struct _node {
 FILE* fp;										//파일 포인터
 
 void start(NODE *);							//파일안 내용을 불러오는 함수
-void start_setnode(NODE *);				//파일 안 내용을 node에 불러오는 함수.	
+void start_setnode(char *,NODE *);				//파일 안 내용을 node에 불러오는 함수.	
 void plus(NODE *);							//node추가.
 void del(NODE *,NODE *);					//node 삭제.
 NODE *find_plus(NODE*, NODE *);		//plus함수 내 함수. 중복여부 확인.
@@ -25,44 +25,51 @@ void end(NODE *);									//파일에 값 저장.
 
 void start(NODE * target)
 {
-	fp = fopen("C:/Users/user/Desktop/database/database.txt", "r");
+	fp = fopen("C:/Users/user/Desktop/database/database.txt", "rt");		//파일 쓰기/읽기 모드로 열기
 	if (fp == NULL) {
 		printf("ERROR\n");
 		return start(target);
 	}
-	while (!feof(fp)) {
-			start_setnode(target);
+	while (1) {
+		char buf[256];														//문자열(한 사람의 개인정보)를 받아올 공간
+		fgets(buf, sizeof(buf), fp);									//정보를 buf에 넣음.
+		if (feof(fp))	break;											//만약 문자열에 끝에 도달 했다면 break
+		if (!strcmp(buf, "\n"))	continue;							//\n자체를 문자열로 인식하는 버그때문에 예외 처리
+		start_setnode(buf,target);									//함수 호출
 	}
-	
+	fclose(fp);
 }
-void start_setnode(NODE* node)
+
+void start_setnode(char * buf,NODE* node)
 {
-	NODE* newNode = (NODE*)malloc(sizeof(NODE));
-	char buf[256];
-	fgets(buf, sizeof(buf), fp);
-	char* ptr = strtok(buf, " ");
+	NODE* newNode = (NODE*)malloc(sizeof(NODE));			//새로운 노드 생성
 	
-	newNode->next = node->next;
-	strcpy(newNode->name, ptr);
-	ptr = strtok(NULL, " ");
+	char* ptr = strtok(buf, " ");										//공백을 기준으로 문자열 분리.
+	
+	newNode->next = node->next;									//새로운 노드의 다음 주소값을 현 노드의 다음 주소값으로 바꿈 = 노드 삽입
+	strcpy(newNode->name, ptr);										//문자열(이름) 복사
+	ptr = strtok(NULL, " ");											
 	strcpy(newNode->phonenum, ptr);
 	ptr = strtok(NULL, " ");
 	strcpy(newNode->email, ptr);
-	node->next = newNode;
+	ptr = strtok(NULL, " ");
+	node->next = newNode;												//전 노드의 next에 새로운 노드의 주소값 삽입
 }
+
 void end(NODE* node)
 {
-	NODE* target = node->next;
-	NODE* temp = target;
+	fp = fopen("C:/Users/user/Desktop/database/database.txt", "w");		//파일 쓰기 모드로 열기
+	NODE* target = node->next;																//현재 노드의 다음 노드 주소값 저장.
+	NODE* temp = target;																		//다음노드 주소값 백업
 	while (target != NULL) {
-		temp = temp->next;
-		fprintf(fp, "%s ", target->name);
+		temp = temp->next;																		//다음 노드의 next로 이동
+		fprintf(fp, "%s ", target->name);													//이름,전화번호, 이메일을 파일에 기록
 		fprintf(fp, "%s ", target->phonenum);
-		fprintf(fp, "%s ", target->email);
-		free(target);
-		target = temp;
+		fprintf(fp, "%s\n", target->email);
+		free(target);																				//메모리 할당 해제
+		target = temp;																			//다음 노드로 이동
 	}
-	
+	fclose(fp);
 }
 int main()
 {
@@ -73,7 +80,7 @@ int main()
 
 	printf("PIMS에 오신것을 환영합니다.\n 고객님의 개인정보를 보관합니다.\n");
 	printf("1 : 새로운 사람을 등록하거나 등록된 사람의 정보를 수정 및 삭제할 수 있습니다.\n");
-	printf("2 : 이름을 한 글자 이상 입력하면 그 결과를 출력합니다\n");
+	printf("2 : 이름을 입력하면 그 결과를 출력합니다\n");
 	printf("3 : 개인정보들을 저장하고 프로그램을 종료합니다.\n");
 	while (1) {
 		printf("\n명령어를 입력해주세요! >> ");
@@ -118,7 +125,7 @@ void plus(NODE * target)		//node 추가
 		strcpy(newNode->phonenum ,temp->phonenum);
 		strcpy(newNode->email, temp->email);
 		target->next = newNode;
-		printf("등록되었습니다!\n >> ");
+		printf("등록되었습니다!\n");
 	}
 	else
 	{
